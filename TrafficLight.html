@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Traffic Light Simulation</title>
+    <style>
+      .traffic-light {
+        width: 60px;
+        height: 180px;
+        background: #333;
+        margin: 10px;
+        padding: 10px;
+        border-radius: 10px;
+      }
+      .light {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 5px auto;
+        background: #111;
+      }
+      .red.active {
+        background: red;
+      }
+      .yellow.active {
+        background: yellow;
+      }
+      .green.active {
+        background: green;
+      }
+      .direction {
+        display: inline-block;
+        text-align: center;
+      }
+      .timer {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="lights">
+      <div id="controls">
+        Green: <input id="greenTime" type="number" value="20" />s Yellow:
+        <input id="yellowTime" type="number" value="4" />s
+        <button onclick="startSimulation()">Start</button>
+        <button onclick="stopSimulation()">Stop</button>
+      </div>
+
+      <div class="direction" id="north">
+        <div class="traffic-light">
+          <div class="light red"></div>
+          <div class="light yellow"></div>
+          <div class="light green"></div>
+        </div>
+        <div class="timer">0</div>
+        North
+      </div>
+
+      
+      <div class="direction" id="south">
+        <div class="traffic-light">
+          <div class="light red"></div>
+          <div class="light yellow"></div>
+          <div class="light green"></div>
+        </div>
+        <div class="timer">0</div>
+        South
+      </div>
+
+      <div class="direction" id="east">
+        <div class="traffic-light">
+          <div class="light red"></div>
+          <div class="light yellow"></div>
+          <div class="light green"></div>
+        </div>
+        <div class="timer">0</div>
+        East
+      </div>
+
+      <div class="direction" id="west">
+        <div class="traffic-light">
+          <div class="light red"></div>
+          <div class="light yellow"></div>
+          <div class="light green"></div>
+        </div>
+        <div class="timer">0</div>
+        West
+      </div>
+    </div>
+
+    <script>
+      const directions = ["north", "south", "east", "west"];
+      let current = 0,
+        running = false,
+        timer,
+        interval;
+
+      function clearLights() {
+        directions.forEach((dir) => {
+          const el = document.getElementById(dir);
+          ["red", "yellow", "green"].forEach((color) => {
+            el.querySelector(`.${color}`).classList.remove("active");
+          });
+          el.querySelector(".timer").textContent = "";
+        });
+      }
+
+      function showLight(dir, color, time) {
+        const el = document.getElementById(dir);
+        el.querySelector(`.${color}`).classList.add("active");
+        let counter = time;
+        el.querySelector(".timer").textContent = counter;
+
+        interval = setInterval(() => {
+          counter--;
+          el.querySelector(".timer").textContent = counter;
+          if (counter <= 0) clearInterval(interval);
+        }, 1000);
+      }
+
+      function setRedForOthers(activeDir) {
+        directions.forEach((dir) => {
+          if (dir !== activeDir) {
+            const el = document.getElementById(dir);
+            el.querySelector(".red").classList.add("active");
+            el.querySelector(".timer").textContent = "";
+          }
+        });
+      }
+
+      function runCycle() {
+        if (!running) return;
+
+        clearLights();
+
+        const greenTime = parseInt(document.getElementById("greenTime").value);
+        const yellowTime = parseInt(
+          document.getElementById("yellowTime").value
+        );
+
+        const dir = directions[current];
+
+     
+        showLight(dir, "green", greenTime);
+        setRedForOthers(dir);
+
+        timer = setTimeout(() => {
+          if (!running) return;
+          clearLights();
+          showLight(dir, "yellow", yellowTime);
+          setRedForOthers(dir);
+
+          timer = setTimeout(() => {
+            clearLights();
+            current = (current + 1) % 4;
+            runCycle();
+          }, yellowTime * 1000);
+        }, greenTime * 1000);
+      }
+
+      function startSimulation() {
+        if (!running) {
+          running = true;
+          runCycle();
+        }
+      }
+
+      function stopSimulation() {
+        running = false;
+        clearTimeout(timer);
+        clearInterval(interval);
+        clearLights();
+        current = 0;
+      }
+    </script>
+  </body>
+</html>
